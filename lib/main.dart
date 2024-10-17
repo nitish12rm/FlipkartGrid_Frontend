@@ -267,13 +267,15 @@ class _MyHomePageState extends State<MyHomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'This page demonstrates the extraction of key details from grocery products.',
+                  'This page demonstrates the extraction of key details from grocery product.',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 20),
+                Text("For better accuracy, take a closer picture of product",style:TextStyle(fontSize: 16),),
+SizedBox(height: 10,),
                 Text(
                   'Steps:',
                   style: TextStyle(
@@ -283,7 +285,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 SizedBox(height: 10),
                 Text(
-                  '1. Upload one or more images of the product(s).',
+                  '1. Upload one or more images of the product.',
                   style: TextStyle(fontSize: 16),
                 ),
                 SizedBox(height: 5),
@@ -291,6 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   '2. After uploading, click "Process Image." Please allow a few seconds for the results to appear.',
                   style: TextStyle(fontSize: 16),
                 ),
+
 
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "518384174562",
+    "project_id": "flipkart-grid-abyss",
+    "storage_bucket": "flipkart-grid-abyss.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518384174562:android:ca94c1b83ff812f6c4a5bb",
+        "android_client_info": {
+          "package_name": "com.example.flipmlkitocr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyuhcnp-MrjJTGthRtDaZgcr2X8F_esFQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -156,7 +156,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
       appBar: AppBar(
         foregroundColor: Colors.white,
         backgroundColor: Color(0XFF900C3F),
-        title: Text("Fruit Analyse"),
+        title: Text("Fruit Freshness"),
         actions: [
           IconButton(
             icon: Icon(CupertinoIcons.delete),
@@ -180,6 +180,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              Text("Note that the model has been trained on limited fruits as of now, which are Apple, Banana, Guava, Lemon, Lime, Orange, Pomegranate"),
               SizedBox(height: 20),
               Text(
                 'Steps:',
