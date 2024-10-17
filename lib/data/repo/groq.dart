@@ -3,8 +3,10 @@ import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flipmlkitocr/core/api.dart';
+import 'package:flipmlkitocr/data/fresh%20model/fresh_model.dart';
 import 'package:flipmlkitocr/data/model.dart';
 import 'package:flipmlkitocr/data/product_model/product_model.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../contentmodel.dart';
 
@@ -63,4 +65,82 @@ class Groq {
    print(product.brand);
     return product;
   }
+  Future<String> GroqRequestPredicSummary(String fruitRaw) async {
+
+    log("entered");
+    Map<String, dynamic> body = {
+      "messages": [
+        {
+          "role": "system",
+          "content": "provide output in string"
+        },
+        {
+          "role": "user",
+          "content": "You are a fruit specialist and have been working as a food inspector defining the freshness and the shelf life of the fruit please consider the given parameter and provide a breif summary detaling the information in human readable sentence\"${fruitRaw}\""
+        }
+      ],
+      "model": "llama3-70b-8192",
+      "temperature": 1,
+      "max_tokens": 1024,
+      "top_p": 1,
+      "stream": false,
+      "response_format": {
+        "type": "string"
+      },
+      "stop": null
+    }
+
+    ;
+    Response response = await _api.sendRequest.post("/completions",
+        data: body
+    );
+    print("respnse data");
+    print(response.data);
+    String content = response.data['choices'][0]['message']['content'];
+
+    Map<String, dynamic> decodedContent = jsonDecode(content);
+    print(decodedContent);
+
+    GroqModel geoResponse = GroqModel.fromJson(response.data);
+    print("groqresp");
+    print(geoResponse.choices![0].message!.content);
+    String fuitSummary = json.decode(geoResponse.choices![0].message!.content.toString());
+
+
+    return fuitSummary;
+  }
+  Future<FreshModel> getPrediction(String imageUrl) async {
+    Dio dio = Dio();
+  dio.interceptors.add(PrettyDioLogger(
+        requestBody: true,
+        requestHeader: true,
+        responseBody: true,
+        responseHeader: true)
+    );
+
+    try {
+      // Create form data
+      FormData formData = FormData.fromMap({
+        'image_url': imageUrl,  // Set your image URL here
+      });
+
+      // Make the request
+      final response = await dio.post(
+        'http://192.168.1.8:5000/detect_fruit',
+        data: formData,
+      );
+
+      // Check the response and convert to your model
+      if (response.statusCode == 200) {
+        print("jkshdkj");
+        return FreshModel.fromJson(response.data); // Assuming you have a fromJson method
+      } else {
+        throw Exception('Failed to load prediction');
+      }
+    } catch (e) {
+      print('Error: $e');
+      throw Exception('Error making request: $e');
+    }
+  }
+
 }

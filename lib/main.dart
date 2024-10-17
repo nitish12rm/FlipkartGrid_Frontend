@@ -4,10 +4,11 @@ import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:csv/csv.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flipmlkitocr/data/product_model/product_model.dart';
 import 'package:flipmlkitocr/data/repo/groq.dart';
 import 'package:flipmlkitocr/prod.dart';
-import 'package:flipmlkitocr/screens/product/ProductScreen.dart';
+import 'package:flipmlkitocr/screens/freshnessPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
@@ -16,7 +17,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() {
+import 'navigationScreen.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -28,7 +33,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Product Scanner',
 
-      home: const MyHomePage(title: 'Product Scanner'),
+      // home: const MyHomePage(title: 'Product Scanner'),
+      home: Navigationscreen(),
 
     );
   }
@@ -76,6 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
       productInfos.clear();
       x = null;
       product = Product();
+      isProcessing=false;
     });
   }
 
@@ -257,211 +264,241 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Container(
             width: MediaQuery.of(context).size.width,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-
-              children: <Widget>[
-                ///Pictures
-                Visibility(
-                  visible: imagePaths.isNotEmpty,
-                  child: CarouselSlider.builder(
-                    itemCount: imagePaths.length,
-                    options: CarouselOptions(
-                      height: MediaQuery.of(context).size.height*.30, // Adjust height if needed
-                      enlargeCenterPage: true,
-                      enableInfiniteScroll: false,
-                      autoPlay: false,
-                      onPageChanged: (index, reason) {
-                        setState(() {
-                          _currentIndex = index;
-                        });
-                      },
-                    ),
-                    itemBuilder: (context, index, realIndex) {
-                      return Stack(
-                        children: [
-                          Image.file(
-                            File(imagePaths[index]),
-                            fit: BoxFit.fitHeight,
-                            width: double.infinity,
-                          ),
-                          Positioned(
-                            top: -5,
-                            right: 110,
-                            child: Center(
-                              child: IconButton(
-                                icon: Icon(CupertinoIcons.delete, color: Colors.red),
-                                onPressed: () => deleteImage(index),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'This page demonstrates the extraction of key details from grocery products.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Steps:',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: imagePaths.asMap().entries.map((entry) {
-                    return GestureDetector(
-                      onTap: () => setState(() {
-                        _currentIndex = entry.key;
-                      }),
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentIndex == entry.key
-                              ?  Color(0XFF900C3F) // Selected page indicator color
-                              : Colors.grey, // Unselected page indicator color
+                Text(
+                  '1. Upload one or more images of the product(s).',
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  '2. After uploading, click "Process Image." Please allow a few seconds for the results to appear.',
+                  style: TextStyle(fontSize: 16),
+                ),
+
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    ///Pictures
+                    Visibility(
+                      visible: imagePaths.isNotEmpty,
+                      child: CarouselSlider.builder(
+                        itemCount: imagePaths.length,
+                        options: CarouselOptions(
+                          height: MediaQuery.of(context).size.height*.30, // Adjust height if needed
+                          enlargeCenterPage: true,
+                          enableInfiniteScroll: false,
+                          autoPlay: false,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          },
                         ),
+                        itemBuilder: (context, index, realIndex) {
+                          return Stack(
+                            children: [
+                              Image.file(
+                                File(imagePaths[index]),
+                                fit: BoxFit.fitHeight,
+                                width: double.infinity,
+                              ),
+                              Positioned(
+                                top: -5,
+                                right: 110,
+                                child: Center(
+                                  child: IconButton(
+                                    icon: Icon(CupertinoIcons.delete, color: Colors.red),
+                                    onPressed: () => deleteImage(index),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
-                    );
-                  }).toList(),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: imagePaths.asMap().entries.map((entry) {
+                        return GestureDetector(
+                          onTap: () => setState(() {
+                            _currentIndex = entry.key;
+                          }),
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentIndex == entry.key
+                                  ?  Color(0XFF900C3F) // Selected page indicator color
+                                  : Colors.grey, // Unselected page indicator color
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    SizedBox(height: 20,),
+                    InkWell(
+                      onTap: pickImage,
+                      child: Container(decoration: BoxDecoration(color: Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
+                        child: Text("Add Image"),
+                      ),),
+                    ),
+
+                    SizedBox(height: 20),
+                    Text('Selected Images: ${imagePaths.length}'),
+                    SizedBox(height: 20),
+
+                    InkWell(
+                      onTap: imagePaths.isNotEmpty ? processImages : null, child: Container(decoration: BoxDecoration(color: imagePaths.isEmpty?Color(0XFFFF9E79F):Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
+
+                        child: Text('Process Images'),
+                      ),),
+                    ),
+                    SizedBox(height: 20),
+                    if (isProcessing)
+                      CircularProgressIndicator(),
+
+                    Visibility(visible: product.productName!=null,child:  Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Product Information',
+                            style: TextStyle(fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          SizedBox(height: 16),
+                          _buildProductDetail(
+                              'Product Name:', _safeToString(product
+                              .productName)),
+                          _buildProductDetail('Brand:', _safeToString(product
+                              .brand)),
+                          _buildProductDetail('Type:', _safeToString(product
+                              .productType)),
+                          _buildProductDetail(
+                              'Manufacture Date:', _safeToString(product
+                              .manufactureDate)),
+                          _buildProductDetail(
+                              'Expiry Date:', _safeToString(product
+                              .expiryDate)),
+                          _buildProductDetail('Size:', _safeToString(product
+                              .size)),
+                          _buildProductDetail('MRP:', _safeToString(product
+                              .mrp)),
+                          _buildProductDetail('Quantity:', _safeToString(product
+                              .quantity)),
+                          _buildProductDetail(
+                              'Ingredients:', _safeToString(product
+                              .ingredients)),
+                          _buildProductDetail(
+                              'Sterilization Method:', _safeToString(product
+                              .sterilizationMethod)),
+                          _buildProductDetail(
+                              'Directions:', _safeToString(product.directions)),
+                          _buildProductDetail(
+                              'Safety Warning:', _safeToString(product
+                              .safetyWarning)),
+
+                          SizedBox(height: 24),
+
+                          Text(
+                            'Nutritional Value',
+                            style: TextStyle(fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          SizedBox(height: 8),
+                          _buildProductDetail('Calories:', _safeToString(product
+                              .nutritionalValue?.calories)),
+                          _buildProductDetail('Protein:', _safeToString(product
+                              .nutritionalValue?.protein)),
+                          _buildProductDetail(
+                              'Carbohydrates:', _safeToString(product
+                              .nutritionalValue?.carbohydrates)),
+                          _buildProductDetail('Sugars:', _safeToString(product
+                              .nutritionalValue?.sugars)),
+                          _buildProductDetail('Fats:', _safeToString(product
+                              .nutritionalValue?.fats)),
+
+                          SizedBox(height: 24),
+
+                          Text(
+                            'Manufacturer Information',
+                            style: TextStyle(fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          SizedBox(height: 8),
+                          _buildProductDetail('Name:', _safeToString(product
+                              .manufacturer?.name)),
+                          _buildProductDetail(
+                              'Certifications:', _safeToString(product
+                              .manufacturer?.certifications)),
+                          _buildProductDetail(
+                              'Address:', 'Manufacturing: ${_safeToString(
+                              product.manufacturer?.address
+                                  ?.manufacturing)}, Registered: ${_safeToString(
+                              product.manufacturer?.address?.registered)}'),
+
+                          SizedBox(height: 24),
+
+                          Text(
+                            'Contact Information',
+                            style: TextStyle(fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          SizedBox(height: 8),
+                          _buildProductDetail('Email:', _safeToString(product
+                              .manufacturer?.contact?.email)),
+                          _buildProductDetail('Website:', _safeToString(product
+                              .manufacturer?.contact?.website)),
+                          _buildProductDetail(
+                              'Customer Care Number:', _safeToString(product
+                              .manufacturer?.contact?.customerCareNumber)),
+
+                          // if (x != null && x!.rawText != null) ...[
+                          //   Divider(),
+                          //   SizedBox(height: 8),
+                          //   Text(
+                          //     "Raw Data",
+                          //     style: TextStyle(fontWeight: FontWeight.bold,
+                          //         color: Colors.black),
+                          //   ),
+                          //   Text(x!.rawText!,
+                          //       style: TextStyle(color: Colors.black)),
+                          // ],
+                        ],
+                      ),
+                    ))
+
+                  ],
                 ),
-
-                SizedBox(height: 20,),
-                InkWell(
-                  onTap: pickImage,
-                  child: Container(decoration: BoxDecoration(color: Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
-                    child: Text("Add Image"),
-                  ),),
-                ),
-
-                SizedBox(height: 20),
-                Text('Selected Images: ${imagePaths.length}'),
-                SizedBox(height: 20),
-
-                InkWell(
-                  onTap: imagePaths.isNotEmpty ? processImages : null, child: Container(decoration: BoxDecoration(color: imagePaths.isEmpty?Color(0XFFFF9E79F):Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
-
-                    child: Text('Process Images'),
-                  ),),
-                ),
-                SizedBox(height: 20),
-                if (isProcessing)
-                  CircularProgressIndicator(),
-
-                Visibility(visible: product.productName!=null,child:  Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Product Information',
-                        style: TextStyle(fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      SizedBox(height: 16),
-                      _buildProductDetail(
-                          'Product Name:', _safeToString(product
-                          .productName)),
-                      _buildProductDetail('Brand:', _safeToString(product
-                          .brand)),
-                      _buildProductDetail('Type:', _safeToString(product
-                          .productType)),
-                      _buildProductDetail(
-                          'Manufacture Date:', _safeToString(product
-                          .manufactureDate)),
-                      _buildProductDetail(
-                          'Expiry Date:', _safeToString(product
-                          .expiryDate)),
-                      _buildProductDetail('Size:', _safeToString(product
-                          .size)),
-                      _buildProductDetail('MRP:', _safeToString(product
-                          .mrp)),
-                      _buildProductDetail('Quantity:', _safeToString(product
-                          .quantity)),
-                      _buildProductDetail(
-                          'Ingredients:', _safeToString(product
-                          .ingredients)),
-                      _buildProductDetail(
-                          'Sterilization Method:', _safeToString(product
-                          .sterilizationMethod)),
-                      _buildProductDetail(
-                          'Directions:', _safeToString(product.directions)),
-                      _buildProductDetail(
-                          'Safety Warning:', _safeToString(product
-                          .safetyWarning)),
-
-                      SizedBox(height: 24),
-
-                      Text(
-                        'Nutritional Value',
-                        style: TextStyle(fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      _buildProductDetail('Calories:', _safeToString(product
-                          .nutritionalValue?.calories)),
-                      _buildProductDetail('Protein:', _safeToString(product
-                          .nutritionalValue?.protein)),
-                      _buildProductDetail(
-                          'Carbohydrates:', _safeToString(product
-                          .nutritionalValue?.carbohydrates)),
-                      _buildProductDetail('Sugars:', _safeToString(product
-                          .nutritionalValue?.sugars)),
-                      _buildProductDetail('Fats:', _safeToString(product
-                          .nutritionalValue?.fats)),
-
-                      SizedBox(height: 24),
-
-                      Text(
-                        'Manufacturer Information',
-                        style: TextStyle(fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      _buildProductDetail('Name:', _safeToString(product
-                          .manufacturer?.name)),
-                      _buildProductDetail(
-                          'Certifications:', _safeToString(product
-                          .manufacturer?.certifications)),
-                      _buildProductDetail(
-                          'Address:', 'Manufacturing: ${_safeToString(
-                          product.manufacturer?.address
-                              ?.manufacturing)}, Registered: ${_safeToString(
-                          product.manufacturer?.address?.registered)}'),
-
-                      SizedBox(height: 24),
-
-                      Text(
-                        'Contact Information',
-                        style: TextStyle(fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      _buildProductDetail('Email:', _safeToString(product
-                          .manufacturer?.contact?.email)),
-                      _buildProductDetail('Website:', _safeToString(product
-                          .manufacturer?.contact?.website)),
-                      _buildProductDetail(
-                          'Customer Care Number:', _safeToString(product
-                          .manufacturer?.contact?.customerCareNumber)),
-
-                      // if (x != null && x!.rawText != null) ...[
-                      //   Divider(),
-                      //   SizedBox(height: 8),
-                      //   Text(
-                      //     "Raw Data",
-                      //     style: TextStyle(fontWeight: FontWeight.bold,
-                      //         color: Colors.black),
-                      //   ),
-                      //   Text(x!.rawText!,
-                      //       style: TextStyle(color: Colors.black)),
-                      // ],
-                    ],
-                  ),
-                ))
-
               ],
             ),
           ),
