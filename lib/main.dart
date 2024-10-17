@@ -17,6 +17,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'home.dart';
 import 'navigationScreen.dart';
 
 void main() async{
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
       title: 'Product Scanner',
 
       // home: const MyHomePage(title: 'Product Scanner'),
-      home: Navigationscreen(),
+      home: HomeScreen2(),
 
     );
   }
@@ -247,6 +248,12 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.back), // You can customize the icon here
+          onPressed: () {
+            Navigator.pop(context); // Handles back navigation
+          },
+        ),
         foregroundColor: Colors.white,
         backgroundColor: Color(0XFF900C3F),
         title: Text(widget.title),

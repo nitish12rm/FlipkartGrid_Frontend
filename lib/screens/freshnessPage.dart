@@ -58,6 +58,9 @@ class _FreshnesspageState extends State<Freshnesspage> {
       freshPredictions.clear();
       selectedModel=null;
       isProcessing=false;
+      setState(() {
+
+      });
       // productInfos.clear();
       // x = null;
       // product = Product();
@@ -154,6 +157,13 @@ class _FreshnesspageState extends State<Freshnesspage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(CupertinoIcons.back), // You can customize the icon here
+          onPressed: () {
+            Navigator.pop(context); // Handles back navigation
+          },
+        ),
+
         foregroundColor: Colors.white,
         backgroundColor: Color(0XFF900C3F),
         title: Text("Fruit Freshness"),
@@ -355,7 +365,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
                           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                         SizedBox(height: 16),
-                        _buildProductDetail('Confidence:', _safeToString(selectedModel!.confidence.toString())),
+                        _buildProductDetail('Confidence:', _safeToString('${(selectedModel!.confidence!.toDouble() * 100).toStringAsFixed(2)}%')),
                         _buildProductDetail('Expiry Date:', _safeToString(selectedModel!.expiryDate.toString())),
                         _buildProductDetail('Fruit Class:', _safeToString(selectedModel!.fruitClass.toString())),
                         Text(
