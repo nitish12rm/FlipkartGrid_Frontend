@@ -490,8 +490,6 @@ class _FreshnesspageState extends State<Freshnesspage> {
                         ),
                       ),
                     ),
-
-                  if (isDone) CircularProgressIndicator(),
                   if (showData && selectedModel != null)
                     Card(
                       child: Padding(
