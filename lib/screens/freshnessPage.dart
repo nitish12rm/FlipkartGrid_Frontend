@@ -18,19 +18,19 @@ class Freshnesspage extends StatefulWidget {
 }
 
 class _FreshnesspageState extends State<Freshnesspage> {
-  String fruitSummary='';
+  String fruitSummary = '';
   List<String> imagePaths = [];
   List<String> downloadUrls = [];
   List<FreshModel> badModels = [];
-  List<FreshModel> freshPredictions=[];
+  List<FreshModel> freshPredictions = [];
   FreshModel? selectedModel;
-  Groq groq =Groq();
-   XFile? image;
+  Groq groq = Groq();
+  XFile? image;
   String? downloadUrl;
   final textRecognizer = TextRecognizer();
   bool isProcessing = false;
-  bool isDone=false;
-  bool showData =false;
+  bool isDone = false;
+  bool showData = false;
 
   void deleteImage(int index) {
     if (index >= 0 && index < imagePaths.length) {
@@ -40,8 +40,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
           downloadUrls.removeAt(index);
           freshPredictions.clear();
           badModels.clear();
-          selectedModel=null;
-
+          selectedModel = null;
         }
       });
     } else {
@@ -49,18 +48,15 @@ class _FreshnesspageState extends State<Freshnesspage> {
     }
   }
 
-
   void resetData() {
     setState(() {
       imagePaths.clear();
       downloadUrls.clear();
       badModels.clear();
       freshPredictions.clear();
-      selectedModel=null;
-      isProcessing=false;
-      setState(() {
-
-      });
+      selectedModel = null;
+      isProcessing = false;
+      setState(() {});
       // productInfos.clear();
       // x = null;
       // product = Product();
@@ -70,7 +66,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
   Future<void> pickImage() async {
     try {
       final ImagePicker picker = ImagePicker();
-      image = (await picker.pickImage(source: ImageSource.gallery)) ;
+      image = (await picker.pickImage(source: ImageSource.gallery));
 
       if (image == null) return;
 
@@ -81,6 +77,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
       print('Error picking image: $e');
     }
   }
+
   Future<List<String>> _uploadImages(List<String> imagePaths) async {
     List<String> downloadUrls = [];
 
@@ -90,7 +87,9 @@ class _FreshnesspageState extends State<Freshnesspage> {
         File fileToUpload = File(path);
 
         // Upload image to Firebase Storage
-        final storageRef = FirebaseStorage.instance.ref().child('uploads/${DateTime.now()}.png');
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('uploads/${DateTime.now()}.png');
         await storageRef.putFile(fileToUpload);
 
         // Get download URL
@@ -104,8 +103,6 @@ class _FreshnesspageState extends State<Freshnesspage> {
 
     return downloadUrls;
   }
-
-
 
   Future<void> processImages() async {
     setState(() {
@@ -146,11 +143,13 @@ class _FreshnesspageState extends State<Freshnesspage> {
     //   isProcessing = false;
     // });
   }
+
   @override
   void dispose() {
     textRecognizer.close();
     super.dispose();
   }
+
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -163,7 +162,6 @@ class _FreshnesspageState extends State<Freshnesspage> {
             Navigator.pop(context); // Handles back navigation
           },
         ),
-
         foregroundColor: Colors.white,
         backgroundColor: Color(0XFF900C3F),
         title: Text("Fruit Freshness"),
@@ -190,7 +188,8 @@ class _FreshnesspageState extends State<Freshnesspage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text("Note that the model has been trained on limited fruits as of now, which are Apple, Banana, Guava, Lemon, Lime, Orange, Pomegranate"),
+              Text(
+                  "Note that the model has been trained on limited fruits as of now, which are Apple, Banana, Guava, Lemon, Lime, Orange, Pomegranate"),
               SizedBox(height: 20),
               Text(
                 'Steps:',
@@ -201,7 +200,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
               ),
               SizedBox(height: 10),
               Text(
-                '1. Upload one or more images of the fruit(s).',
+                '1. Upload two or more images of the fruit.',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 5),
@@ -217,7 +216,8 @@ class _FreshnesspageState extends State<Freshnesspage> {
                     child: CarouselSlider.builder(
                       itemCount: imagePaths.length,
                       options: CarouselOptions(
-                        height: MediaQuery.of(context).size.height*.30, // Adjust height if needed
+                        height: MediaQuery.of(context).size.height *
+                            .30, // Adjust height if needed
                         enlargeCenterPage: true,
                         enableInfiniteScroll: false,
                         autoPlay: false,
@@ -240,7 +240,8 @@ class _FreshnesspageState extends State<Freshnesspage> {
                               right: 110,
                               child: Center(
                                 child: IconButton(
-                                  icon: Icon(CupertinoIcons.delete, color: Colors.red),
+                                  icon: Icon(CupertinoIcons.delete,
+                                      color: Colors.red),
                                   onPressed: () => deleteImage(index),
                                 ),
                               ),
@@ -261,127 +262,315 @@ class _FreshnesspageState extends State<Freshnesspage> {
                         child: Container(
                           width: 8,
                           height: 8,
-                          margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                          margin: EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 4.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _currentIndex == entry.key
-                                ?  Color(0XFF900C3F) // Selected page indicator color
-                                : Colors.grey, // Unselected page indicator color
+                                ? Color(
+                                    0XFF900C3F) // Selected page indicator color
+                                : Colors
+                                    .grey, // Unselected page indicator color
                           ),
                         ),
                       );
                     }).toList(),
                   ),
 
-                  SizedBox(height: 20,),
-                  InkWell(
-                    onTap: pickImage,
-                    child: Container(decoration: BoxDecoration(color: Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
-                      child: Text("Add Image"),
-                    ),),
+                  SizedBox(
+                    height: 20,
                   ),
 
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width * .4,
+                        child: InkWell(
+                          onTap: pickImage,
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Color(0XFFFFFC300),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 20),
+                              child: Text(
+                                "Add Image",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * .4,
+                        child: InkWell(
+                          onTap: () async {
+                            freshPredictions.clear();
+                            badModels.clear();
+                            selectedModel = null;
+
+                            setState(() {});
+                            isDone = true;
+                            List<String> downloadUrls =
+                                await _uploadImages(imagePaths);
+                            print(
+                                downloadUrls); // Handle the download URLs as needed
+                            for (String down in downloadUrls) {
+                              FreshModel fresh = await groq.getPrediction(down);
+                              freshPredictions.add(fresh);
+                            }
+                            isDone = false;
+                            showData = true;
+
+                            for (var model in freshPredictions) {
+                              if (model.fruitClass != null &&
+                                  model.fruitClass!.contains("Bad")) {
+                                badModels.add(model);
+                              }
+                            }
+
+                            // If we found bad models, select the one with the lowest estimatedDays
+                            if (badModels.isNotEmpty) {
+                              selectedModel = badModels.fold<FreshModel?>(
+                                null,
+                                (previous, current) {
+                                  // Handle null or invalid estimatedDays
+                                  int currentEstimatedDays = current
+                                          .shelfLife?.estimatedDays
+                                          ?.toInt() ??
+                                      2147483647; // Use a large number if null
+                                  int previousEstimatedDays = previous
+                                          ?.shelfLife?.estimatedDays
+                                          ?.toInt() ??
+                                      2147483647; // Use a large number if null
+
+                                  // Ensure both are valid integers for comparison
+                                  return (previous == null ||
+                                          currentEstimatedDays <
+                                              previousEstimatedDays)
+                                      ? current
+                                      : previous;
+                                },
+                              );
+                            } else {
+                              // If no bad models exist, select the model with the lowest estimatedDays from all models
+                              selectedModel =
+                                  freshPredictions.fold<FreshModel?>(
+                                null,
+                                (previous, current) {
+                                  // Handle null or invalid estimatedDays
+                                  int currentEstimatedDays = current
+                                          .shelfLife?.estimatedDays
+                                          ?.toInt() ??
+                                      2147483647; // Use a large number if null
+                                  int previousEstimatedDays = previous
+                                          ?.shelfLife?.estimatedDays
+                                          ?.toInt() ??
+                                      2147483647; // Use a large number if null
+
+                                  // Ensure both are valid integers for comparison
+                                  return (previous == null ||
+                                          currentEstimatedDays <
+                                              previousEstimatedDays)
+                                      ? current
+                                      : previous;
+                                },
+                              );
+                            }
+
+                            setState(() {});
+                          },
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: imagePaths.isEmpty
+                                    ? Color(0XFFFF9E79F)
+                                    : Color(0XFFFFFC300),
+                                borderRadius: BorderRadius.circular(5)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 20),
+                              child: Text(
+                                'Process Images',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   SizedBox(height: 20),
                   Text('Selected Images: ${imagePaths.length}'),
+
                   SizedBox(height: 20),
-
-                  InkWell(
-                    onTap: () async {
-                      freshPredictions.clear();
-                      badModels.clear();
-                      selectedModel=null;
-
-                      setState(() {
-
-                      });
-                      isDone=true;
-                      List<String> downloadUrls = await _uploadImages(imagePaths);
-                      print(downloadUrls); // Handle the download URLs as needed
-                      for(String down in downloadUrls){
-                        FreshModel fresh = await groq.getPrediction(down);
-                        freshPredictions.add(fresh);
-                      }
-                      isDone=false;
-                      showData=true;
-
-
-
-                      for (var model in freshPredictions) {
-                        if (model.fruitClass != null && model.fruitClass!.contains("Bad")) {
-                          badModels.add(model);
-                        }
-                      }
-
-              // If we found bad models, select the one with the lowest estimatedDays
-                      if (badModels.isNotEmpty) {
-                        selectedModel = badModels.fold<FreshModel?>(
-                          null,
-                              (previous, current) {
-                            // Handle null or invalid estimatedDays
-                            int currentEstimatedDays = current.shelfLife?.estimatedDays?.toInt() ?? 2147483647; // Use a large number if null
-                            int previousEstimatedDays = previous?.shelfLife?.estimatedDays?.toInt() ?? 2147483647; // Use a large number if null
-
-                            // Ensure both are valid integers for comparison
-                            return (previous == null || currentEstimatedDays < previousEstimatedDays) ? current : previous;
-                          },
-                        );
-                      } else {
-                        // If no bad models exist, select the model with the lowest estimatedDays from all models
-                        selectedModel = freshPredictions.fold<FreshModel?>(
-                          null,
-                              (previous, current) {
-                            // Handle null or invalid estimatedDays
-                            int currentEstimatedDays = current.shelfLife?.estimatedDays?.toInt() ?? 2147483647; // Use a large number if null
-                            int previousEstimatedDays = previous?.shelfLife?.estimatedDays?.toInt() ?? 2147483647; // Use a large number if null
-
-                            // Ensure both are valid integers for comparison
-                            return (previous == null || currentEstimatedDays < previousEstimatedDays) ? current : previous;
-                          },
-                        );
-                      }
-
-
-
-
-                      setState(() {
-
-                      });
-                    }, child: Container(decoration: BoxDecoration(color: imagePaths.isEmpty?Color(0XFFFF9E79F):Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
-                    child: Text('Process Images'),
-                  ),),
-                  ),
-                  SizedBox(height: 20),
-                  if (isDone)
-                    CircularProgressIndicator(),
+                  if (isDone) CircularProgressIndicator(),
                   if (showData && selectedModel != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                        Text(
-                          'Product Information',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Text(
+                                    'Product Information',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            _buildProductDetail(
+                                'Confidence:',
+                                _safeToString(
+                                    '${(selectedModel!.confidence!.toDouble() * 100).toStringAsFixed(2)}%')),
+                            _buildProductDetail(
+                                'Expiry Date:',
+                                _safeToString(
+                                    selectedModel!.expiryDate.toString())),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start, // Aligns the top of the text
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Fruit Class:',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              10), // Small space between title and value
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          selectedModel!.fruitClass
+                                                  .toString() ??
+                                              'N/A',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                          textAlign: TextAlign.left,
+                                          softWrap:
+                                              true, // Ensures the text wraps onto the next line if needed
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
                         ),
-                        SizedBox(height: 16),
-                        _buildProductDetail('Confidence:', _safeToString('${(selectedModel!.confidence!.toDouble() * 100).toStringAsFixed(2)}%')),
-                        _buildProductDetail('Expiry Date:', _safeToString(selectedModel!.expiryDate.toString())),
-                        _buildProductDetail('Fruit Class:', _safeToString(selectedModel!.fruitClass.toString())),
-                        Text(
-                          'Shelf Life',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
-                        ),
-                        SizedBox(height: 16),
-                        _buildProductDetail('Estimated Date:', _safeToString(selectedModel!.shelfLife!.estimatedDays)),
-                        _buildProductDetail('Refrigerator:', _safeToString(selectedModel!.shelfLife!.refrigerator)),
-                        _buildProductDetail('Shelf:', _safeToString(selectedModel!.shelfLife!.estimatedDays)),
-                      ],
+                      ),
                     ),
-
-
-
-
+                  if (showData && selectedModel != null)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Text(
+                                    'Shelf Life',
+                                    style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            _buildProductDetail(
+                                'Estimated Date:',
+                                _safeToString(
+                                    selectedModel!.shelfLife!.estimatedDays)),
+                            _buildProductDetail(
+                                'Refrigerator:',
+                                _safeToString(
+                                    selectedModel!.shelfLife!.refrigerator)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 8.0, horizontal: 12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment
+                                        .start, // Aligns the top of the text
+                                    children: [
+                                      Expanded(
+                                        flex: 2,
+                                        child: Text(
+                                          'Shelf:',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              10), // Small space between title and value
+                                      Expanded(
+                                        flex: 3,
+                                        child: Text(
+                                          '${selectedModel!.shelfLife!.estimatedDays}' ??
+                                              'N/A',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                          textAlign: TextAlign.left,
+                                          softWrap:
+                                              true, // Ensures the text wraps onto the next line if needed
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
 
                   ///info
                 ],
@@ -392,6 +581,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
       )),
     );
   }
+
   Widget _buildProductDetail(String title, String? value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
@@ -400,7 +590,8 @@ class _FreshnesspageState extends State<Freshnesspage> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start, // Aligns the top of the text
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Aligns the top of the text
             children: [
               Expanded(
                 flex: 2,
@@ -421,10 +612,10 @@ class _FreshnesspageState extends State<Freshnesspage> {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
-
                   ),
                   textAlign: TextAlign.left,
-                  softWrap: true, // Ensures the text wraps onto the next line if needed
+                  softWrap:
+                      true, // Ensures the text wraps onto the next line if needed
                 ),
               ),
             ],
@@ -437,6 +628,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
       ),
     );
   }
+
   String? _safeToString(dynamic value) {
     if (value == null) return null;
     if (value is String) return value;

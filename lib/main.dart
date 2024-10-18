@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flipmlkitocr/data/product_model/product_model.dart';
 import 'package:flipmlkitocr/data/repo/groq.dart';
 import 'package:flipmlkitocr/prod.dart';
+import 'package:flipmlkitocr/screens/SplashScreen.dart';
 import 'package:flipmlkitocr/screens/freshnessPage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +20,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'home.dart';
 import 'navigationScreen.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const MyApp());
@@ -35,8 +35,7 @@ class MyApp extends StatelessWidget {
       title: 'Product Scanner',
 
       // home: const MyHomePage(title: 'Product Scanner'),
-      home: HomeScreen2(),
-
+      home: Splash(),
     );
   }
 }
@@ -50,7 +49,14 @@ class ProductInfo {
   final String? mrp;
   final String? weight;
 
-  ProductInfo({this.brand, this.productType, this.expiryDate, this.rawText, this.size, this.mrp, this.weight});
+  ProductInfo(
+      {this.brand,
+      this.productType,
+      this.expiryDate,
+      this.rawText,
+      this.size,
+      this.mrp,
+      this.weight});
 }
 
 class MyHomePage extends StatefulWidget {
@@ -83,10 +89,7 @@ class _MyHomePageState extends State<MyHomePage> {
       productInfos.clear();
       x = null;
       product = Product();
-      isProcessing=false;
-      setState(() {
-
-      });
+      isProcessing = false;
     });
   }
 
@@ -97,6 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (value is List) return value.join(', ');
     return value.toString();
   }
+
   Future<void> exportProductToCSV() async {
     var status = await Permission.storage.request();
 
@@ -106,7 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     } else if (status.isPermanentlyDenied) {
       // Permissions can be permanently denied, handle that case
-      print("Storage permission permanently denied. Please allow it from settings.");
+      print(
+          "Storage permission permanently denied. Please allow it from settings.");
       openAppSettings(); // Optionally redirect to app settings
       return;
     }
@@ -142,7 +147,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ["Registered Address", product.manufacturer?.address?.registered],
       ["Email", product.manufacturer?.contact?.email],
       ["Website", product.manufacturer?.contact?.website],
-      ["Customer Care Number", product.manufacturer?.contact?.customerCareNumber],
+      [
+        "Customer Care Number",
+        product.manufacturer?.contact?.customerCareNumber
+      ],
     ];
 
     String csv = const ListToCsvConverter().convert(rows);
@@ -164,7 +172,6 @@ class _MyHomePageState extends State<MyHomePage> {
     await file.writeAsString(csv);
     print("CSV file saved at: $path");
   }
-
 
   Future<void> pickImage() async {
     try {
@@ -189,14 +196,14 @@ class _MyHomePageState extends State<MyHomePage> {
     for (String imagePath in imagePaths) {
       try {
         final inputImage = InputImage.fromFilePath(imagePath);
-        final RecognizedText result = await textRecognizer.processImage(
-            inputImage);
+        final RecognizedText result =
+            await textRecognizer.processImage(inputImage);
 
-        final ImageLabelerOptions options = ImageLabelerOptions(
-            confidenceThreshold: 0.8);
+        final ImageLabelerOptions options =
+            ImageLabelerOptions(confidenceThreshold: 0.8);
         final imageLabeler = ImageLabeler(options: options);
-        final List<ImageLabel> labels = await imageLabeler.processImage(
-            inputImage);
+        final List<ImageLabel> labels =
+            await imageLabeler.processImage(inputImage);
 
         String labelText = labels.map((label) => label.label).join(" ");
 
@@ -245,6 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
     textRecognizer.close();
     super.dispose();
   }
+
   int _currentIndex = 0;
   @override
   Widget build(BuildContext context) {
@@ -284,8 +292,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 SizedBox(height: 20),
-                Text("For better accuracy, take a closer picture of product",style:TextStyle(fontSize: 16),),
-SizedBox(height: 10,),
+                Text(
+                  "For better accuracy, take a closer picture of product",
+                  style: TextStyle(fontSize: 16),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
                 Text(
                   'Steps:',
                   style: TextStyle(
@@ -303,8 +316,7 @@ SizedBox(height: 10,),
                   '2. After uploading, click "Process Image." Please allow a few seconds for the results to appear.',
                   style: TextStyle(fontSize: 16),
                 ),
-
-
+                SizedBox(height: 20),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
@@ -314,7 +326,8 @@ SizedBox(height: 10,),
                       child: CarouselSlider.builder(
                         itemCount: imagePaths.length,
                         options: CarouselOptions(
-                          height: MediaQuery.of(context).size.height*.30, // Adjust height if needed
+                          height: MediaQuery.of(context).size.height *
+                              .30, // Adjust height if needed
                           enlargeCenterPage: true,
                           enableInfiniteScroll: false,
                           autoPlay: false,
@@ -337,7 +350,8 @@ SizedBox(height: 10,),
                                 right: 110,
                                 child: Center(
                                   child: IconButton(
-                                    icon: Icon(CupertinoIcons.delete, color: Colors.red),
+                                    icon: Icon(CupertinoIcons.delete,
+                                        color: Colors.red),
                                     onPressed: () => deleteImage(index),
                                   ),
                                 ),
@@ -358,158 +372,300 @@ SizedBox(height: 10,),
                           child: Container(
                             width: 8,
                             height: 8,
-                            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                            margin: EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 4.0),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _currentIndex == entry.key
-                                  ?  Color(0XFF900C3F) // Selected page indicator color
-                                  : Colors.grey, // Unselected page indicator color
+                                  ? Color(
+                                      0XFF900C3F) // Selected page indicator color
+                                  : Colors
+                                      .grey, // Unselected page indicator color
                             ),
                           ),
                         );
                       }).toList(),
                     ),
 
-                    SizedBox(height: 20,),
-                    InkWell(
-                      onTap: pickImage,
-                      child: Container(decoration: BoxDecoration(color: Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
-                        child: Text("Add Image"),
-                      ),),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width * .4,
+                          child: InkWell(
+                            onTap: pickImage,
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Color(0XFFFFFC300),
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 20),
+                                child: Text(
+                                  "Add Image",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .4,
+                          child: InkWell(
+                            onTap: imagePaths.isNotEmpty ? processImages : null,
+                            child: Container(
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: imagePaths.isEmpty
+                                      ? Color(0XFFFF9E79F)
+                                      : Color(0XFFFFFC300),
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 10.0, horizontal: 20),
+                                child: Text(
+                                  'Process Images',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
 
                     SizedBox(height: 20),
                     Text('Selected Images: ${imagePaths.length}'),
                     SizedBox(height: 20),
 
-                    InkWell(
-                      onTap: imagePaths.isNotEmpty ? processImages : null, child: Container(decoration: BoxDecoration(color: imagePaths.isEmpty?Color(0XFFFF9E79F):Color(0XFFFFFC300),borderRadius: BorderRadius.circular(5)),child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 10.0,horizontal: 20),
+                    if (isProcessing) CircularProgressIndicator(),
 
-                        child: Text('Process Images'),
-                      ),),
-                    ),
-                    SizedBox(height: 20),
-                    if (isProcessing)
-                      CircularProgressIndicator(),
-
-                    Visibility(visible: product.productName!=null,child:  Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Product Information',
-                            style: TextStyle(fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                    Visibility(
+                        visible: product.productName != null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Card(
+                                    color: Colors.white,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Product Information',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  _buildProductDetail('Product Name:',
+                                      _safeToString(product.productName)),
+                                  _buildProductDetail(
+                                      'Brand:', _safeToString(product.brand)),
+                                  _buildProductDetail('Type:',
+                                      _safeToString(product.productType)),
+                                  _buildProductDetail('Manufacture Date:',
+                                      _safeToString(product.manufactureDate)),
+                                  _buildProductDetail('Expiry Date:',
+                                      _safeToString(product.expiryDate)),
+                                  _buildProductDetail(
+                                      'Size:', _safeToString(product.size)),
+                                  _buildProductDetail(
+                                      'MRP:', _safeToString(product.mrp)),
+                                  _buildProductDetail('Quantity:',
+                                      _safeToString(product.quantity)),
+                                  _buildProductDetail('Ingredients:',
+                                      _safeToString(product.ingredients)),
+                                  _buildProductDetail(
+                                      'Sterilization Method:',
+                                      _safeToString(
+                                          product.sterilizationMethod)),
+                                  _buildProductDetail('Directions:',
+                                      _safeToString(product.directions)),
+                                  _buildProductDetail('Safety Warning:',
+                                      _safeToString(product.safetyWarning)),
+                                ],
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 16),
-                          _buildProductDetail(
-                              'Product Name:', _safeToString(product
-                              .productName)),
-                          _buildProductDetail('Brand:', _safeToString(product
-                              .brand)),
-                          _buildProductDetail('Type:', _safeToString(product
-                              .productType)),
-                          _buildProductDetail(
-                              'Manufacture Date:', _safeToString(product
-                              .manufactureDate)),
-                          _buildProductDetail(
-                              'Expiry Date:', _safeToString(product
-                              .expiryDate)),
-                          _buildProductDetail('Size:', _safeToString(product
-                              .size)),
-                          _buildProductDetail('MRP:', _safeToString(product
-                              .mrp)),
-                          _buildProductDetail('Quantity:', _safeToString(product
-                              .quantity)),
-                          _buildProductDetail(
-                              'Ingredients:', _safeToString(product
-                              .ingredients)),
-                          _buildProductDetail(
-                              'Sterilization Method:', _safeToString(product
-                              .sterilizationMethod)),
-                          _buildProductDetail(
-                              'Directions:', _safeToString(product.directions)),
-                          _buildProductDetail(
-                              'Safety Warning:', _safeToString(product
-                              .safetyWarning)),
-
-                          SizedBox(height: 24),
-
-                          Text(
-                            'Nutritional Value',
-                            style: TextStyle(fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                        )),
+                    Visibility(
+                        visible: product.productName != null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Card(
+                                    color: Colors.white,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Nutritional Value',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  _buildProductDetail(
+                                      'Calories:',
+                                      _safeToString(
+                                          product.nutritionalValue?.calories)),
+                                  _buildProductDetail(
+                                      'Protein:',
+                                      _safeToString(
+                                          product.nutritionalValue?.protein)),
+                                  _buildProductDetail(
+                                      'Carbohydrates:',
+                                      _safeToString(product
+                                          .nutritionalValue?.carbohydrates)),
+                                  _buildProductDetail(
+                                      'Sugars:',
+                                      _safeToString(
+                                          product.nutritionalValue?.sugars)),
+                                  _buildProductDetail(
+                                      'Fats:',
+                                      _safeToString(
+                                          product.nutritionalValue?.fats)),
+                                ],
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 8),
-                          _buildProductDetail('Calories:', _safeToString(product
-                              .nutritionalValue?.calories)),
-                          _buildProductDetail('Protein:', _safeToString(product
-                              .nutritionalValue?.protein)),
-                          _buildProductDetail(
-                              'Carbohydrates:', _safeToString(product
-                              .nutritionalValue?.carbohydrates)),
-                          _buildProductDetail('Sugars:', _safeToString(product
-                              .nutritionalValue?.sugars)),
-                          _buildProductDetail('Fats:', _safeToString(product
-                              .nutritionalValue?.fats)),
+                        )),
+                    Visibility(
+                        visible: product.productName != null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Card(
+                                    color: Colors.white,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Manufacturer Information',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  _buildProductDetail(
+                                      'Name:',
+                                      _safeToString(
+                                          product.manufacturer?.name)),
+                                  _buildProductDetail(
+                                      'Certifications:',
+                                      _safeToString(product
+                                          .manufacturer?.certifications)),
+                                  _buildProductDetail('Address:',
+                                      'Manufacturing: ${_safeToString(product.manufacturer?.address?.manufacturing)}, Registered: ${_safeToString(product.manufacturer?.address?.registered)}'),
 
-                          SizedBox(height: 24),
+                                  SizedBox(height: 24),
 
-                          Text(
-                            'Manufacturer Information',
-                            style: TextStyle(fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                                  // if (x != null && x!.rawText != null) ...[
+                                  //   Divider(),
+                                  //   SizedBox(height: 8),
+                                  //   Text(
+                                  //     "Raw Data",
+                                  //     style: TextStyle(fontWeight: FontWeight.bold,
+                                  //         color: Colors.black),
+                                  //   ),
+                                  //   Text(x!.rawText!,
+                                  //       style: TextStyle(color: Colors.black)),
+                                  // ],
+                                ],
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 8),
-                          _buildProductDetail('Name:', _safeToString(product
-                              .manufacturer?.name)),
-                          _buildProductDetail(
-                              'Certifications:', _safeToString(product
-                              .manufacturer?.certifications)),
-                          _buildProductDetail(
-                              'Address:', 'Manufacturing: ${_safeToString(
-                              product.manufacturer?.address
-                                  ?.manufacturing)}, Registered: ${_safeToString(
-                              product.manufacturer?.address?.registered)}'),
+                        )),
+                    Visibility(
+                        visible: product.productName != null,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Card(
+                                    color: Colors.white,
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          'Contact Information',
+                                          style: TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  _buildProductDetail(
+                                      'Email:',
+                                      _safeToString(product
+                                          .manufacturer?.contact?.email)),
+                                  _buildProductDetail(
+                                      'Website:',
+                                      _safeToString(product
+                                          .manufacturer?.contact?.website)),
+                                  _buildProductDetail(
+                                      'Customer Care Number:',
+                                      _safeToString(product.manufacturer
+                                          ?.contact?.customerCareNumber)),
 
-                          SizedBox(height: 24),
-
-                          Text(
-                            'Contact Information',
-                            style: TextStyle(fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                                  // if (x != null && x!.rawText != null) ...[
+                                  //   Divider(),
+                                  //   SizedBox(height: 8),
+                                  //   Text(
+                                  //     "Raw Data",
+                                  //     style: TextStyle(fontWeight: FontWeight.bold,
+                                  //         color: Colors.black),
+                                  //   ),
+                                  //   Text(x!.rawText!,
+                                  //       style: TextStyle(color: Colors.black)),
+                                  // ],
+                                ],
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 8),
-                          _buildProductDetail('Email:', _safeToString(product
-                              .manufacturer?.contact?.email)),
-                          _buildProductDetail('Website:', _safeToString(product
-                              .manufacturer?.contact?.website)),
-                          _buildProductDetail(
-                              'Customer Care Number:', _safeToString(product
-                              .manufacturer?.contact?.customerCareNumber)),
-
-                          // if (x != null && x!.rawText != null) ...[
-                          //   Divider(),
-                          //   SizedBox(height: 8),
-                          //   Text(
-                          //     "Raw Data",
-                          //     style: TextStyle(fontWeight: FontWeight.bold,
-                          //         color: Colors.black),
-                          //   ),
-                          //   Text(x!.rawText!,
-                          //       style: TextStyle(color: Colors.black)),
-                          // ],
-                        ],
-                      ),
-                    ))
-
+                        )),
                   ],
                 ),
               ],
@@ -535,7 +691,8 @@ SizedBox(height: 10,),
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start, // Aligns the top of the text
+            crossAxisAlignment:
+                CrossAxisAlignment.start, // Aligns the top of the text
             children: [
               Expanded(
                 flex: 2,
@@ -556,10 +713,10 @@ SizedBox(height: 10,),
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
-
                   ),
                   textAlign: TextAlign.left,
-                  softWrap: true, // Ensures the text wraps onto the next line if needed
+                  softWrap:
+                      true, // Ensures the text wraps onto the next line if needed
                 ),
               ),
             ],
@@ -572,7 +729,6 @@ SizedBox(height: 10,),
       ),
     );
   }
-
 
 // Widget _buildProductDetail(String title, String? value) {
 //   return Padding(
