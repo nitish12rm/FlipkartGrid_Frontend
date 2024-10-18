@@ -84,6 +84,9 @@ class _MyHomePageState extends State<MyHomePage> {
       x = null;
       product = Product();
       isProcessing=false;
+      setState(() {
+
+      });
     });
   }
 
