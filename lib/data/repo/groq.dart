@@ -126,7 +126,7 @@ class Groq {
 
       // Make the request
       final response = await dio.post(
-        'http://ec2-13-60-12-245.eu-north-1.compute.amazonaws.com:5000/detect_fruit',
+        'http://ec2-16-171-208-31.eu-north-1.compute.amazonaws.com:5000/detect_fruit',
         data: formData,
       );
 
