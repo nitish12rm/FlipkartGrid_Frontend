@@ -1,4 +1,4 @@
-# Flipkart Grid 5.0 - Fruit Shelf Life Detection
+# Flipkart Grid 5.0 - Fruit Shelf Life And Product OCR Detection
 
 ## Overview
 
