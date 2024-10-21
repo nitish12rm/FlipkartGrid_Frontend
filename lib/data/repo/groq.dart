@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
-import 'package:flipmlkitocr/api.dart';
+import 'package:flipmlkitocr/secrets.dart';
 import 'package:flipmlkitocr/core/api.dart';
 import 'package:flipmlkitocr/data/fresh%20model/fresh_model.dart';
 import 'package:flipmlkitocr/data/model.dart';
@@ -127,7 +127,7 @@ class Groq {
 
       // Make the request
       final response = await dio.post(
-        SecretKeys.aws_api,
+        Secrets.aws_api,
         data: formData,
       );
 

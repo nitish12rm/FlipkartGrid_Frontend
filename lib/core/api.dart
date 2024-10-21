@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:flipmlkitocr/api.dart';
+import 'package:flipmlkitocr/secrets.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 
- String api_key = SecretKeys.groq_api;
+ String api_key = Secrets.groq_api;
 String BASE_URL = "https://api.groq.com/openai/v1/chat";
  Map<String, dynamic> DEFAULT_HEADERS = {
   'content-type': 'application/json',
