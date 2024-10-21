@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:flipmlkitocr/api.dart';
 import 'package:flipmlkitocr/core/api.dart';
 import 'package:flipmlkitocr/data/fresh%20model/fresh_model.dart';
 import 'package:flipmlkitocr/data/model.dart';
@@ -126,7 +127,7 @@ class Groq {
 
       // Make the request
       final response = await dio.post(
-        'http://ec2-16-171-208-31.eu-north-1.compute.amazonaws.com:5000/detect_fruit',
+        SecretKeys.aws_api,
         data: formData,
       );
 
