@@ -48,7 +48,7 @@ dependencies:
 #  get_it: ^7.6.0
 #  flutter_background_service: ^3.0.1
 #  shared_preferences: ^2.2.0
-  image_cropper: ^5.0.0
+#  image_cropper: ^5.0.0
   google_mlkit_text_recognition: ^0.14.0
 #  grouped_list: ^5.1.2
   input_quantity: ^1.2.1
@@ -60,8 +60,11 @@ dependencies:
   path_provider: ^2.1.4
   permission_handler: ^11.3.1
   firebase_core: ^3.6.0
+  firebase_core_web:
   firebase_storage: ^12.3.3
   google_mlkit_entity_extraction: ^0.14.0
+  image_picker_for_web: ^3.0.6
+  google_generative_ai: ^0.4.6
 
 dev_dependencies:
   flutter_test:

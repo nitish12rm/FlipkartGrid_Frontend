@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flipmlkitocr/data/fresh%20model/fresh_model.dart';
 import 'package:flipmlkitocr/data/repo/groq.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -15,10 +16,13 @@ class Freshnesspage extends StatefulWidget {
 
   @override
   State<Freshnesspage> createState() => _FreshnesspageState();
+
 }
 
 class _FreshnesspageState extends State<Freshnesspage> {
   String fruitSummary = '';
+  List<Image> imageList=[];
+
   List<String> imagePaths = [];
   List<String> downloadUrls = [];
   List<FreshModel> badModels = [];
@@ -26,6 +30,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
   FreshModel? selectedModel;
   Groq groq = Groq();
   XFile? image;
+  Image? wimage;
   String? downloadUrl;
   final textRecognizer = TextRecognizer();
   bool isProcessing = false;
@@ -62,40 +67,90 @@ class _FreshnesspageState extends State<Freshnesspage> {
       // product = Product();
     });
   }
-
+  List<XFile> xFileImageList=[];
   Future<void> pickImage() async {
     try {
+
       final ImagePicker picker = ImagePicker();
+
       image = (await picker.pickImage(source: ImageSource.gallery));
+      xFileImageList.add(image!);
+
 
       if (image == null) return;
 
       setState(() {
         imagePaths.add(image!.path);
+        if (kIsWeb) {
+          wimage = Image.network(image!.path);
+          imageList.add(wimage!);
+
+        //   pro
+        }else{
+          imagePaths.add(image!.path);
+        }
       });
     } catch (e) {
       print('Error picking image: $e');
     }
   }
 
-  Future<List<String>> _uploadImages(List<String> imagePaths) async {
+  // Future<List<String>> _uploadImages(List<String> imagePaths) async {
+  //   List<String> downloadUrls = [];
+  //
+  //   for (String path in imagePaths) {
+  //     try {
+  //       // Convert string path to File
+  //       File fileToUpload = File(path);
+  //
+  //       // Upload image to Firebase Storage
+  //       final storageRef = FirebaseStorage.instance
+  //           .ref()
+  //           .child('uploads/${DateTime.now()}.png');
+  //       await storageRef.putFile(fileToUpload);
+  //
+  //       // Get download URL
+  //       String downloadUrl = await storageRef.getDownloadURL();
+  //       downloadUrls.add(downloadUrl);
+  //       print('Uploaded: $downloadUrl');
+  //     } catch (e) {
+  //       print('Error uploading image: $e');
+  //     }
+  //   }
+  //
+  //   return downloadUrls;
+  // }
+  Future<List<String>> _uploadImagesFromList(List<XFile> imageList) async {
     List<String> downloadUrls = [];
 
-    for (String path in imagePaths) {
+    for (XFile image in imageList) {
       try {
-        // Convert string path to File
-        File fileToUpload = File(path);
+        // For web, use the XFile directly, no need to convert to File
+        if (kIsWeb) {
+          // Web uses Firebase Storage differently with Blob URLs.
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('uploads/${DateTime.now().millisecondsSinceEpoch}.png');
+          await storageRef.putData(await image.readAsBytes());
 
-        // Upload image to Firebase Storage
-        final storageRef = FirebaseStorage.instance
-            .ref()
-            .child('uploads/${DateTime.now()}.png');
-        await storageRef.putFile(fileToUpload);
+          // Get download URL
+          String downloadUrl = await storageRef.getDownloadURL();
+          downloadUrls.add(downloadUrl);
+          print('Uploaded: $downloadUrl');
+        } else {
+          // For mobile, convert XFile to File and upload
+          File fileToUpload = File(image.path);
 
-        // Get download URL
-        String downloadUrl = await storageRef.getDownloadURL();
-        downloadUrls.add(downloadUrl);
-        print('Uploaded: $downloadUrl');
+          final storageRef = FirebaseStorage.instance
+              .ref()
+              .child('uploads/${DateTime.now().millisecondsSinceEpoch}.png');
+          await storageRef.putFile(fileToUpload);
+
+          // Get download URL
+          String downloadUrl = await storageRef.getDownloadURL();
+          downloadUrls.add(downloadUrl);
+          print('Uploaded: $downloadUrl');
+        }
       } catch (e) {
         print('Error uploading image: $e');
       }
@@ -104,35 +159,43 @@ class _FreshnesspageState extends State<Freshnesspage> {
     return downloadUrls;
   }
 
+
   Future<void> processImages() async {
     setState(() {
       isProcessing = true;
     });
     String infotext = "";
-    for (String imagePath in imagePaths) {
-      try {
-        final inputImage = InputImage.fromFilePath(imagePath);
-        final RecognizedText result =
-            await textRecognizer.processImage(inputImage);
+    if(kIsWeb){
+      for(Image img in imageList){
 
-        final ImageLabelerOptions options =
-            ImageLabelerOptions(confidenceThreshold: 0.8);
-        final imageLabeler = ImageLabeler(options: options);
-        final List<ImageLabel> labels =
-            await imageLabeler.processImage(inputImage);
+      }
+    }else{
+      for (String imagePath in imagePaths) {
+        try {
+          final inputImage = InputImage.fromFilePath(imagePath);
+          final RecognizedText result =
+          await textRecognizer.processImage(inputImage);
 
-        String labelText = labels.map((label) => label.label).join(" ");
+          final ImageLabelerOptions options =
+          ImageLabelerOptions(confidenceThreshold: 0.8);
+          final imageLabeler = ImageLabeler(options: options);
+          final List<ImageLabel> labels =
+          await imageLabeler.processImage(inputImage);
 
-        // Process the recognized text
-        infotext = infotext + " " + (result.text + " " + labelText);
+          String labelText = labels.map((label) => label.label).join(" ");
 
-        setState(() {
-          infotext;
-        });
-      } catch (e) {
-        print('Error processing image: $e');
+          // Process the recognized text
+          infotext = infotext + " " + (result.text + " " + labelText);
+
+          setState(() {
+            infotext;
+          });
+        } catch (e) {
+          print('Error processing image: $e');
+        }
       }
     }
+
     // Groq groq = Groq();
     // Product prod = await groq.GroqRequest(infotext);
     // log(prod.brand ?? "brandName");
@@ -230,11 +293,23 @@ class _FreshnesspageState extends State<Freshnesspage> {
                       itemBuilder: (context, index, realIndex) {
                         return Stack(
                           children: [
-                            Image.file(
+                            kIsWeb? imageList[index]:Image.file(
                               File(imagePaths[index]),
                               fit: BoxFit.fitHeight,
                               width: double.infinity,
                             ),
+                            // if(kIsWeb)
+                            //   imageList[index],
+                            // else{
+                            //   Image.file(
+                            //     File(imagePaths[index]),
+                            //     fit: BoxFit.fitHeight,
+                            //     width: double.infinity,
+                            //   ),
+                            // }
+
+
+
                             Positioned(
                               top: -5,
                               right: 110,
@@ -315,7 +390,7 @@ class _FreshnesspageState extends State<Freshnesspage> {
                             setState(() {});
                             isDone = true;
                             List<String> downloadUrls =
-                                await _uploadImages(imagePaths);
+                                await _uploadImagesFromList(xFileImageList);
                             print(
                                 downloadUrls); // Handle the download URLs as needed
                             for (String down in downloadUrls) {

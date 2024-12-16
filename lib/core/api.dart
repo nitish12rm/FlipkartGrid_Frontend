@@ -1,5 +1,10 @@
+
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flipmlkitocr/secrets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 
@@ -11,20 +16,22 @@ String BASE_URL = "https://api.groq.com/openai/v1/chat";
 };
 
 
-class Api{
+class Api {
   final Dio _dio = Dio();
-  Api(){
+
+  Api() {
     _dio.options.baseUrl = BASE_URL;
     _dio.options.headers = DEFAULT_HEADERS;
 
 
+    // Add logging interceptor
     _dio.interceptors.add(PrettyDioLogger(
-        requestBody: true,
-        requestHeader: true,
-        responseBody: true,
-        responseHeader: true)
-    );
+      requestBody: true,
+      requestHeader: true,
+      responseBody: true,
+      responseHeader: true,
+    ));
   }
-  Dio get sendRequest => _dio;
 
+  Dio get sendRequest => _dio;
 }

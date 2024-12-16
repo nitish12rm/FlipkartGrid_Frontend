@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:csv/csv.dart';
@@ -10,6 +11,7 @@ import 'package:flipmlkitocr/prod.dart';
 import 'package:flipmlkitocr/screens/SplashScreen.dart';
 import 'package:flipmlkitocr/screens/freshnessPage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
@@ -17,12 +19,17 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'firebase_options.dart';
 import 'home.dart';
 import 'navigationScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+  // await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -80,12 +87,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void deleteImage(int index) {
     setState(() {
       imagePaths.removeAt(index);
+      imageList.removeAt(index);
     });
   }
 
   void resetData() {
     setState(() {
       imagePaths.clear();
+      imageList.clear();
       productInfos.clear();
       x = null;
       product = Product();
@@ -172,60 +181,112 @@ class _MyHomePageState extends State<MyHomePage> {
     await file.writeAsString(csv);
     print("CSV file saved at: $path");
   }
+  XFile? image;
+  Image? wimage;
+  List<XFile> xFileImageList=[];
+  List<Image> imageList=[];
 
   Future<void> pickImage() async {
     try {
+
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      image = (await picker.pickImage(source: ImageSource.gallery));
+      xFileImageList.add(image!);
+
 
       if (image == null) return;
 
       setState(() {
-        imagePaths.add(image.path);
+        imagePaths.add(image!.path);
+        log(imagePaths[0]);
+        if (kIsWeb) {
+          wimage = Image.network(image!.path);
+          imageList.add(wimage!);
+
+          //   pro
+        }else{
+          imagePaths.add(image!.path);
+        }
       });
     } catch (e) {
       print('Error picking image: $e');
     }
   }
-
+List<String> txtList=[];
   Future<void> processImages() async {
-    setState(() {
-      isProcessing = true;
-    });
-    String infotext = "";
-    for (String imagePath in imagePaths) {
-      try {
-        final inputImage = InputImage.fromFilePath(imagePath);
-        final RecognizedText result =
-            await textRecognizer.processImage(inputImage);
+    if(!kIsWeb){
+      setState(() {
+        isProcessing = true;
+      });
+      String infotext = "";
+      for (String imagePath in imagePaths) {
+        try {
+          final inputImage = InputImage.fromFilePath(imagePath);
+          final RecognizedText result =
+          await textRecognizer.processImage(inputImage);
 
-        final ImageLabelerOptions options =
-            ImageLabelerOptions(confidenceThreshold: 0.8);
-        final imageLabeler = ImageLabeler(options: options);
-        final List<ImageLabel> labels =
-            await imageLabeler.processImage(inputImage);
+          final ImageLabelerOptions options =
+          ImageLabelerOptions(confidenceThreshold: 0.8);
+          final imageLabeler = ImageLabeler(options: options);
+          final List<ImageLabel> labels =
+          await imageLabeler.processImage(inputImage);
 
-        String labelText = labels.map((label) => label.label).join(" ");
+          String labelText = labels.map((label) => label.label).join(" ");
 
-        // Process the recognized text
-        infotext = infotext + " " + (result.text + " " + labelText);
+          // Process the recognized text
+          infotext = infotext + " " + (result.text + " " + labelText);
 
-        setState(() {
-          infotext;
-        });
-      } catch (e) {
-        print('Error processing image: $e');
+          setState(() {
+            infotext;
+          });
+        } catch (e) {
+          print('Error processing image: $e');
+        }
       }
+      Groq groq = Groq();
+      Product prod = await groq.GroqRequest(infotext);
+      // log(prod.brand ?? "brandName");
+      ProductInfo sorted = extractProductInfo(infotext);
+      setState(() {
+        x = sorted;
+        product = prod;
+        isProcessing = false;
+      });
     }
-    Groq groq = Groq();
-    Product prod = await groq.GroqRequest(infotext);
-    log(prod.brand ?? "brandName");
-    ProductInfo sorted = extractProductInfo(infotext);
-    setState(() {
-      x = sorted;
-      product = prod;
-      isProcessing = false;
-    });
+   else{
+      setState(() {
+        isProcessing = true;
+      });
+      String infotext = "";
+
+      // for(String img in imagePaths){
+      //   try {
+      //     Groq grq=Groq();
+      //     log("called gemini");
+      //     Product prd = await grq.sendImagePrompt(img);
+      //     // txtList.add(txt);
+      //     // log("prinitingh");
+      //     // log(txt+"hello");
+      //
+      //     setState(() {
+      //       infotext;
+      //     });
+      //   } catch (e) {
+      //     print('Error processing image: $e');
+      //   }
+      // }
+
+      Groq groq = Groq();
+      Product prod = await groq.sendImagePrompt(imagePaths);
+      log(prod.brand ?? "brandName");
+      ProductInfo sorted = extractProductInfo(infotext);
+      setState(() {
+        x = sorted;
+        product = prod;
+        isProcessing = false;
+      });
+    }
   }
 
   ProductInfo extractProductInfo(String text) {
@@ -340,6 +401,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         itemBuilder: (context, index, realIndex) {
                           return Stack(
                             children: [
+                              kIsWeb?imageList[index]:
                               Image.file(
                                 File(imagePaths[index]),
                                 fit: BoxFit.fitHeight,
@@ -364,7 +426,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: imagePaths.asMap().entries.map((entry) {
+                      children: imageList.asMap().entries.map((entry) {
                         return GestureDetector(
                           onTap: () => setState(() {
                             _currentIndex = entry.key;
@@ -416,11 +478,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         Container(
                           width: MediaQuery.of(context).size.width * .4,
                           child: InkWell(
-                            onTap: imagePaths.isNotEmpty ? processImages : null,
+                            onTap: imageList.isNotEmpty ? processImages : null,
                             child: Container(
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                  color: imagePaths.isEmpty
+                                  color: imageList.isEmpty
                                       ? Color(0XFFFF9E79F)
                                       : Color(0XFFFFFC300),
                                   borderRadius: BorderRadius.circular(5)),
@@ -439,7 +501,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
 
                     SizedBox(height: 20),
-                    Text('Selected Images: ${imagePaths.length}'),
+                    Text('Selected Images: ${imageList.length}'),
                     SizedBox(height: 20),
 
                     if (isProcessing) CircularProgressIndicator(),
